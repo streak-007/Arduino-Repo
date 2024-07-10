@@ -1,6 +1,5 @@
 #include<Servo.h>
 Servo servo;
-
 int x_axis;
 
 int servo_val;
