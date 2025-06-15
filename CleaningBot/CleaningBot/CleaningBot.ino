@@ -290,8 +290,8 @@ void turnLeft() {
   digitalWrite(CUTOFF_LEFT, LOW);
   digitalWrite(CUTOFF_RIGHT, HIGH);
 
-  digitalWrite(MOTOR_LEFT_POSITIVE, LOW);
-  digitalWrite(MOTOR_LEFT_NEGATIVE, LOW);
+  digitalWrite(MOTOR_LEFT_POSITIVE, HIGH);
+  digitalWrite(MOTOR_LEFT_NEGATIVE, HIGH);
   digitalWrite(MOTOR_RIGHT_POSITIVE, HIGH);
   digitalWrite(MOTOR_RIGHT_NEGATIVE, HIGH);
 }
@@ -304,8 +304,8 @@ void turnRight() {
 
   digitalWrite(MOTOR_LEFT_POSITIVE, HIGH);
   digitalWrite(MOTOR_LEFT_NEGATIVE, HIGH);
-  digitalWrite(MOTOR_RIGHT_POSITIVE, LOW);
-  digitalWrite(MOTOR_RIGHT_NEGATIVE, LOW);
+  digitalWrite(MOTOR_RIGHT_POSITIVE, HIGH);
+  digitalWrite(MOTOR_RIGHT_NEGATIVE, HIGH);
 }
 
 // ---------------- Ultrasonic Distance ----------------
