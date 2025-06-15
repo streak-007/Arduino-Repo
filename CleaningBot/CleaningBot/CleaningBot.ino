@@ -92,7 +92,7 @@ void loop() {
     stopMotors();
     if (DEBUG)
       Serial.print("Sweeper Off\t");
-    digitalWrite(SWEEPER_PIN, LOW);
+    digitalWrite(SWEEPER_PIN, HIGH);
   }
 
   if (DEBUG)
@@ -132,7 +132,7 @@ void handleManualMode() {
       Serial.print("Sweeper Off\t");
     }
   }
-  digitalWrite(SWEEPER_PIN, sweeperState ? HIGH : LOW);
+  digitalWrite(SWEEPER_PIN, sweeperState ? LOW : HIGH);
 
   // Movement control
   if (chLeftRight > RC_HIGH_THRESHOLD_RIGHTLEFT) {
@@ -150,7 +150,7 @@ void handleManualMode() {
 
 // ---------------- Auto Mode Handler ----------------
 void handleAutoMode() {
-  digitalWrite(SWEEPER_PIN, HIGH);  // Sweeper ON in auto mode
+  digitalWrite(SWEEPER_PIN, LOW);  // Sweeper ON in auto mode
 
   int frontDist = getDistance(TRIG_FRONT, ECHO_FRONT);
   int leftDist = getDistance(TRIG_LEFT, ECHO_LEFT);
@@ -248,37 +248,37 @@ void handleAutoMode() {
 void stopMotors() {
   if (DEBUG)
     Serial.print("Stop\t");
-  digitalWrite(MOTOR_LEFT_FORWARD, LOW);
-  digitalWrite(MOTOR_LEFT_BACKWARD, LOW);
-  digitalWrite(MOTOR_RIGHT_FORWARD, LOW);
-  digitalWrite(MOTOR_RIGHT_BACKWARD, LOW);
+  digitalWrite(MOTOR_LEFT_FORWARD, HIGH);
+  digitalWrite(MOTOR_LEFT_BACKWARD, HIGH);
+  digitalWrite(MOTOR_RIGHT_FORWARD, HIGH);
+  digitalWrite(MOTOR_RIGHT_BACKWARD, HIGH);
 
-  digitalWrite(CUTOFF_LEFT, LOW);
-  digitalWrite(CUTOFF_RIGHT, LOW);
+  digitalWrite(CUTOFF_LEFT, HIGH);
+  digitalWrite(CUTOFF_RIGHT, HIGH);
 }
 
 void moveForward() {
   if (DEBUG)
     Serial.print("Forward\t");
-  digitalWrite(CUTOFF_LEFT, HIGH);
-  digitalWrite(CUTOFF_RIGHT, HIGH);
+  digitalWrite(CUTOFF_LEFT, LOW);
+  digitalWrite(CUTOFF_RIGHT, LOW);
 
   digitalWrite(MOTOR_LEFT_FORWARD, HIGH);
-  digitalWrite(MOTOR_LEFT_BACKWARD, LOW);
+  digitalWrite(MOTOR_LEFT_BACKWARD, HIGH);
   digitalWrite(MOTOR_RIGHT_FORWARD, HIGH);
-  digitalWrite(MOTOR_RIGHT_BACKWARD, LOW);
+  digitalWrite(MOTOR_RIGHT_BACKWARD, HIGH);
 }
 
 void moveBackward() {
   if (DEBUG)
     Serial.print("Backward\t");
-  digitalWrite(CUTOFF_LEFT, HIGH);
-  digitalWrite(CUTOFF_RIGHT, HIGH);
+  digitalWrite(CUTOFF_LEFT, LOW);
+  digitalWrite(CUTOFF_RIGHT, LOW);
 
   digitalWrite(MOTOR_LEFT_FORWARD, LOW);
-  digitalWrite(MOTOR_LEFT_BACKWARD, HIGH);
+  digitalWrite(MOTOR_LEFT_BACKWARD, LOW);
   digitalWrite(MOTOR_RIGHT_FORWARD, LOW);
-  digitalWrite(MOTOR_RIGHT_BACKWARD, HIGH);
+  digitalWrite(MOTOR_RIGHT_BACKWARD, LOW);
 }
 
 void turnLeft() {
@@ -287,22 +287,22 @@ void turnLeft() {
   digitalWrite(CUTOFF_LEFT, LOW);
   digitalWrite(CUTOFF_RIGHT, HIGH);
 
-  digitalWrite(MOTOR_LEFT_FORWARD, LOW);
-  digitalWrite(MOTOR_LEFT_BACKWARD, LOW);
-  digitalWrite(MOTOR_RIGHT_FORWARD, HIGH);
-  digitalWrite(MOTOR_RIGHT_BACKWARD, LOW);
+  digitalWrite(MOTOR_LEFT_FORWARD, HIGH);
+  digitalWrite(MOTOR_LEFT_BACKWARD, HIGH);
+  digitalWrite(MOTOR_RIGHT_FORWARD, LOW);
+  digitalWrite(MOTOR_RIGHT_BACKWARD, HIGH);
 }
 
 void turnRight() {
   if (DEBUG)
     Serial.print("Right\t");
-  digitalWrite(CUTOFF_LEFT, HIGH);
-  digitalWrite(CUTOFF_RIGHT, LOW);
+  digitalWrite(CUTOFF_LEFT, LOW);
+  digitalWrite(CUTOFF_RIGHT, HIGH);
 
-  digitalWrite(MOTOR_LEFT_FORWARD, HIGH);
-  digitalWrite(MOTOR_LEFT_BACKWARD, LOW);
-  digitalWrite(MOTOR_RIGHT_FORWARD, LOW);
-  digitalWrite(MOTOR_RIGHT_BACKWARD, LOW);
+  digitalWrite(MOTOR_LEFT_FORWARD, LOW);
+  digitalWrite(MOTOR_LEFT_BACKWARD, HIGH);
+  digitalWrite(MOTOR_RIGHT_FORWARD, HIGH);
+  digitalWrite(MOTOR_RIGHT_BACKWARD, HIGH);
 }
 
 // ---------------- Ultrasonic Distance ----------------
