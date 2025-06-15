@@ -1,39 +1,43 @@
+#define DEBUG false
 // ---------------- Pin Definitions ----------------
-#define MOTOR_LEFT_FORWARD     10
-#define MOTOR_LEFT_BACKWARD    11
-#define MOTOR_RIGHT_FORWARD    12
-#define MOTOR_RIGHT_BACKWARD   13
-#define CUTOFF_LEFT            8
-#define CUTOFF_RIGHT           9
+#define MOTOR_LEFT_FORWARD 10
+#define MOTOR_LEFT_BACKWARD 11
+#define MOTOR_RIGHT_FORWARD 12
+#define MOTOR_RIGHT_BACKWARD 13
+#define CUTOFF_LEFT 8
+#define CUTOFF_RIGHT 9
 
-#define SWEEPER_PIN            A3
+#define SWEEPER_PIN A3
 
-#define TRIG_FRONT             2
-#define ECHO_FRONT             3
-#define TRIG_LEFT              4
-#define ECHO_LEFT              5
-#define TRIG_RIGHT             6
-#define ECHO_RIGHT             7
-#define TRIG_BACK              A4
-#define ECHO_BACK              A5
+#define TRIG_FRONT 2
+#define ECHO_FRONT 3
+#define TRIG_LEFT 4
+#define ECHO_LEFT 5
+#define TRIG_RIGHT 6
+#define ECHO_RIGHT 7
+#define TRIG_BACK A4
+#define ECHO_BACK A5
 
-#define CH_FWD_BACK            A0
-#define CH_LEFT_RIGHT          A1
-#define CH_SWEEPER             A2
-#define CH_MODE_SWITCH         A0
+#define CH_FWD_BACK A0     //CH3
+#define CH_LEFT_RIGHT A1   //CH1
+#define CH_SWEEPER A2      //CH5
+#define CH_MODE_SWITCH A0  //CH3
 
 // ---------------- Constants ----------------
-#define OBSTACLE_DISTANCE               150  // cm
-#define RC_HIGH_THRESHOLD_FRONTBACK     1600
-#define RC_LOW_THRESHOLD_FRONTBACK      1300
-#define RC_HIGH_THRESHOLD_RIGHTLEFT     1650
-#define RC_LOW_THRESHOLD_RIGHTLEFT      1350
-#define RC_THRESHOLD_SWEEPER            1400
-#define RC_THRESHOLD_MANUALAUTO         1000
+#define OBSTACLE_DISTANCE 150  // cm
+#define RC_HIGH_THRESHOLD_FRONTBACK 1600
+#define RC_LOW_THRESHOLD_FRONTBACK 1300
+#define RC_HIGH_THRESHOLD_RIGHTLEFT 1650
+#define RC_LOW_THRESHOLD_RIGHTLEFT 1350
+#define RC_THRESHOLD_SWEEPER 1400
+#define RC_THRESHOLD_MANUALAUTO 1000
 
 // ---------------- Variables ----------------
 bool isManual = false;
 bool sweeperState = false;
+enum Direction { right,
+                 left };
+Direction currentPattern = right;
 
 void setup() {
   // Motor relay pins
@@ -56,37 +60,89 @@ void setup() {
   pinMode(ECHO_RIGHT, INPUT);
   pinMode(TRIG_BACK, OUTPUT);
   pinMode(ECHO_BACK, INPUT);
+
+  pinMode(CH_FWD_BACK, INPUT);
+  pinMode(CH_LEFT_RIGHT, INPUT);
+  pinMode(CH_SWEEPER, INPUT);
+
+  if (DEBUG)
+    Serial.begin(9600);
 }
 
 void loop() {
-  isManual = analogRead(CH_MODE_SWITCH) < RC_THRESHOLD_MANUALAUTO;
+  int mode = pulseIn(CH_MODE_SWITCH, HIGH, 25000);
+  if (DEBUG) {
+    Serial.print("CH_MODE_SWITCH");
+    Serial.print(": ");
+    Serial.print(mode);
+    Serial.print("\t");
+  }
+
+  isManual = mode > RC_THRESHOLD_MANUALAUTO;
 
   if (isManual) {
+    if (DEBUG)
+      Serial.print("Manual Mode\t");
     handleManualMode();
-  } else {
+  } else if (mode > 500) {
+    if (DEBUG)
+      Serial.print("Auto Mode\t");
     handleAutoMode();
+  } else {
+    stopMotors();
+    if (DEBUG)
+      Serial.print("Sweeper Off\t");
+    digitalWrite(SWEEPER_PIN, LOW);
   }
+
+  if (DEBUG)
+    Serial.println();
+  delay(200);
 }
 
 // ---------------- Manual Mode Handler ----------------
 void handleManualMode() {
-  int chFwdBack = analogRead(CH_FWD_BACK);
-  int chLeftRight = analogRead(CH_LEFT_RIGHT);
-  int chSweeper = analogRead(CH_SWEEPER);
+  int chFwdBack = pulseIn(CH_FWD_BACK, HIGH, 25000);
+  int chLeftRight = pulseIn(CH_LEFT_RIGHT, HIGH, 25000);
+  int chSweeper = pulseIn(CH_SWEEPER, HIGH, 25000);
+
+  if (DEBUG) {
+    Serial.print("chFwdBack");
+    Serial.print(": ");
+    Serial.print(chFwdBack);
+    Serial.print("\t");
+
+    Serial.print("chLeftRight");
+    Serial.print(": ");
+    Serial.print(chLeftRight);
+    Serial.print("\t");
+
+    Serial.print("chSweeper");
+    Serial.print(": ");
+    Serial.print(chSweeper);
+    Serial.print("\t");
+  }
 
   // Sweeper control
   sweeperState = chSweeper > RC_THRESHOLD_SWEEPER;
+  if (DEBUG) {
+    if (sweeperState) {
+      Serial.print("Sweeper On\t");
+    } else {
+      Serial.print("Sweeper Off\t");
+    }
+  }
   digitalWrite(SWEEPER_PIN, sweeperState ? HIGH : LOW);
 
   // Movement control
-  if (chFwdBack > RC_HIGH_THRESHOLD_FRONTBACK) {
-    moveForward();
-  } else if (chFwdBack < RC_LOW_THRESHOLD_FRONTBACK) {
-    moveBackward();
-  } else if (chLeftRight > RC_HIGH_THRESHOLD_RIGHTLEFT) {
+  if (chLeftRight > RC_HIGH_THRESHOLD_RIGHTLEFT) {
     turnRight();
   } else if (chLeftRight < RC_LOW_THRESHOLD_RIGHTLEFT) {
     turnLeft();
+  } else if (chFwdBack > RC_HIGH_THRESHOLD_FRONTBACK) {
+    moveForward();
+  } else if (chFwdBack < RC_LOW_THRESHOLD_FRONTBACK) {
+    moveBackward();
   } else {
     stopMotors();
   }
@@ -101,25 +157,56 @@ void handleAutoMode() {
   int rightDist = getDistance(TRIG_RIGHT, ECHO_RIGHT);
   int backDist = getDistance(TRIG_BACK, ECHO_BACK);
 
+  if (DEBUG) {
+    Serial.print("frontDist");
+    Serial.print(": ");
+    Serial.print(frontDist);
+    Serial.print("\t");
+
+    Serial.print("leftDist");
+    Serial.print(": ");
+    Serial.print(leftDist);
+    Serial.print("\t");
+
+    Serial.print("rightDist");
+    Serial.print(": ");
+    Serial.print(rightDist);
+    Serial.print("\t");
+
+    Serial.print("backDist");
+    Serial.print(": ");
+    Serial.print(backDist);
+    Serial.print("\t");
+  }
+
   if (frontDist > OBSTACLE_DISTANCE) {
     moveForward();
   } else {
+    if (DEBUG)
+      Serial.print("Obstacle detected stopping\t");
     stopMotors();
     delay(300);
 
-    if (rightDist > OBSTACLE_DISTANCE && rightDist >= leftDist) {
-      turnRight(); delay(400); stopMotors(); delay(300);
-      moveForward(); delay(600); stopMotors(); delay(300);
-      turnRight(); delay(400); stopMotors(); delay(300);
-    } else if (leftDist > OBSTACLE_DISTANCE) {
-      turnLeft(); delay(400); stopMotors(); delay(300);
-      moveForward(); delay(600); stopMotors(); delay(300);
-      turnLeft(); delay(400); stopMotors(); delay(300);
+    if (rightDist > OBSTACLE_DISTANCE && (rightDist >= leftDist || currentPattern == right)) {
+      if (DEBUG)
+        Serial.print("Right direction selected\t");
+          currentPattern = right;
+      turnRight();
+      delay(4000);
+      stopMotors();
+    } else if (leftDist > OBSTACLE_DISTANCE && currentPattern == left) {
+      if (DEBUG)
+        Serial.print("Left direction selected\t");
+      turnLeft();
+      delay(4000);
+      stopMotors();
     } else {
       // If both sides blocked, try moving backward if back is clear
       if (backDist > OBSTACLE_DISTANCE) {
+        if (DEBUG)
+          Serial.print("Right direction selected\t");
         moveBackward();
-        delay(500);
+        delay(2000);
         stopMotors();
         delay(300);
       } else {
@@ -129,13 +216,14 @@ void handleAutoMode() {
       }
     }
   }
-
   delay(50);
 }
 
 
 // ---------------- Motor Control ----------------
 void stopMotors() {
+  if (DEBUG)
+    Serial.print("Stop\t");
   digitalWrite(MOTOR_LEFT_FORWARD, LOW);
   digitalWrite(MOTOR_LEFT_BACKWARD, LOW);
   digitalWrite(MOTOR_RIGHT_FORWARD, LOW);
@@ -146,6 +234,8 @@ void stopMotors() {
 }
 
 void moveForward() {
+  if (DEBUG)
+    Serial.print("Forward\t");
   digitalWrite(CUTOFF_LEFT, HIGH);
   digitalWrite(CUTOFF_RIGHT, HIGH);
 
@@ -156,6 +246,8 @@ void moveForward() {
 }
 
 void moveBackward() {
+  if (DEBUG)
+    Serial.print("Backward\t");
   digitalWrite(CUTOFF_LEFT, HIGH);
   digitalWrite(CUTOFF_RIGHT, HIGH);
 
@@ -166,6 +258,8 @@ void moveBackward() {
 }
 
 void turnLeft() {
+  if (DEBUG)
+    Serial.print("Left\t");
   digitalWrite(CUTOFF_LEFT, LOW);
   digitalWrite(CUTOFF_RIGHT, HIGH);
 
@@ -176,6 +270,8 @@ void turnLeft() {
 }
 
 void turnRight() {
+  if (DEBUG)
+    Serial.print("Right\t");
   digitalWrite(CUTOFF_LEFT, HIGH);
   digitalWrite(CUTOFF_RIGHT, LOW);
 
@@ -194,6 +290,6 @@ int getDistance(int trigPin, int echoPin) {
   digitalWrite(trigPin, LOW);
 
   long duration = pulseIn(echoPin, HIGH, 20000);  // 20ms timeout
-  if (duration == 0) return 1000;  // No echo
-  return duration * 0.034 / 2;     // cm
+  if (duration == 0) return 1000;                 // No echo
+  return duration * 0.034 / 2;                    // cm
 }
