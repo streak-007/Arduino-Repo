@@ -179,63 +179,65 @@ void handleAutoMode() {
     Serial.print("\t");
   }
 
-   if (frontDist > OBSTACLE_DISTANCE) {
-    moveForward();
-  } else {
-    if (DEBUG) Serial.print("Obstacle detected - Stopping\t");
-    stopMotors();
-    delay(300);
+  if (frontDist < MAX_OBSTACLE_DIST && leftDist < MAX_OBSTACLE_DIST && rightDist < MAX_OBSTACLE_DIST && backDist < MAX_OBSTACLE_DIST) {
+    if (frontDist > OBSTACLE_DISTANCE) {
+      moveForward();
+    } else {
+      if (DEBUG) Serial.print("Obstacle detected - Stopping\t");
+      stopMotors();
+      delay(300);
 
-    if (currentPattern == right) {
-      if (rightDist > OBSTACLE_DISTANCE) {
-        if (DEBUG) Serial.print("Turning Right\t");
-        turnRight();
-        delay(4000);
-        stopMotors();
-        currentPattern = left;  // Toggle pattern
-      } else if (leftDist > OBSTACLE_DISTANCE) {
-        if (DEBUG) Serial.print("Turning Left (fallback)\t");
-        turnLeft();
-        delay(4000);
-        stopMotors();
-        currentPattern = left;  // Toggle anyway
-      } else {
-        if (backDist > OBSTACLE_DISTANCE) {
-          if (DEBUG) Serial.print("Backing up\t");
-          moveBackward();
-          delay(2000);
+      if (currentPattern == right) {
+        if (rightDist > OBSTACLE_DISTANCE) {
+          if (DEBUG) Serial.print("Turning Right\t");
+          turnRight();
+          delay(4000);
           stopMotors();
-          delay(300);
+          currentPattern = left;  // Toggle pattern
+        } else if (leftDist > OBSTACLE_DISTANCE) {
+          if (DEBUG) Serial.print("Turning Left (fallback)\t");
+          turnLeft();
+          delay(4000);
+          stopMotors();
+          currentPattern = left;  // Toggle anyway
         } else {
-          if (DEBUG) Serial.print("No space to move\t");
-          stopMotors();
-          delay(500);
+          if (backDist > OBSTACLE_DISTANCE) {
+            if (DEBUG) Serial.print("Backing up\t");
+            moveBackward();
+            delay(2000);
+            stopMotors();
+            delay(300);
+          } else {
+            if (DEBUG) Serial.print("No space to move\t");
+            stopMotors();
+            delay(500);
+          }
         }
-      }
-    } else {  // currentPattern == left
-      if (leftDist > OBSTACLE_DISTANCE) {
-        if (DEBUG) Serial.print("Turning Left\t");
-        turnLeft();
-        delay(4000);
-        stopMotors();
-        currentPattern = right;  // Toggle pattern
-      } else if (rightDist > OBSTACLE_DISTANCE) {
-        if (DEBUG) Serial.print("Turning Right (fallback)\t");
-        turnRight();
-        delay(4000);
-        stopMotors();
-        currentPattern = right;  // Toggle anyway
-      } else {
-        if (backDist > OBSTACLE_DISTANCE) {
-          if (DEBUG) Serial.print("Backing up\t");
-          moveBackward();
-          delay(2000);
+      } else {  // currentPattern == left
+        if (leftDist > OBSTACLE_DISTANCE) {
+          if (DEBUG) Serial.print("Turning Left\t");
+          turnLeft();
+          delay(4000);
           stopMotors();
-          delay(300);
+          currentPattern = right;  // Toggle pattern
+        } else if (rightDist > OBSTACLE_DISTANCE) {
+          if (DEBUG) Serial.print("Turning Right (fallback)\t");
+          turnRight();
+          delay(4000);
+          stopMotors();
+          currentPattern = right;  // Toggle anyway
         } else {
-          if (DEBUG) Serial.print("No space to move\t");
-          stopMotors();
-          delay(500);
+          if (backDist > OBSTACLE_DISTANCE) {
+            if (DEBUG) Serial.print("Backing up\t");
+            moveBackward();
+            delay(2000);
+            stopMotors();
+            delay(300);
+          } else {
+            if (DEBUG) Serial.print("No space to move\t");
+            stopMotors();
+            delay(500);
+          }
         }
       }
     }
