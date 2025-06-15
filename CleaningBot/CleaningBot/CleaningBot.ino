@@ -1,20 +1,20 @@
-#define DEBUG false
+#define DEBUG true
 // ---------------- Pin Definitions ----------------
-#define MOTOR_LEFT_FORWARD 10
-#define MOTOR_LEFT_BACKWARD 11
-#define MOTOR_RIGHT_FORWARD 12
-#define MOTOR_RIGHT_BACKWARD 13
-#define CUTOFF_LEFT 8
-#define CUTOFF_RIGHT 9
+#define MOTOR_LEFT_FORWARD 4
+#define MOTOR_LEFT_BACKWARD 5
+#define MOTOR_RIGHT_FORWARD 6
+#define MOTOR_RIGHT_BACKWARD 7
+#define CUTOFF_LEFT 2
+#define CUTOFF_RIGHT 3
 
 #define SWEEPER_PIN A3
 
-#define TRIG_FRONT 2
-#define ECHO_FRONT 3
-#define TRIG_LEFT 4
-#define ECHO_LEFT 5
-#define TRIG_RIGHT 6
-#define ECHO_RIGHT 7
+#define TRIG_FRONT 8
+#define ECHO_FRONT 9
+#define TRIG_LEFT 10
+#define ECHO_LEFT 11
+#define TRIG_RIGHT 12
+#define ECHO_RIGHT 13
 #define TRIG_BACK A4
 #define ECHO_BACK A5
 
@@ -24,7 +24,7 @@
 #define CH_MODE_SWITCH A0  //CH3
 
 // ---------------- Constants ----------------
-#define OBSTACLE_DISTANCE 150  // cm
+#define OBSTACLE_DISTANCE 20  // cm
 #define RC_HIGH_THRESHOLD_FRONTBACK 1600
 #define RC_LOW_THRESHOLD_FRONTBACK 1300
 #define RC_HIGH_THRESHOLD_RIGHTLEFT 1650
@@ -179,40 +179,64 @@ void handleAutoMode() {
     Serial.print("\t");
   }
 
-  if (frontDist > OBSTACLE_DISTANCE) {
+   if (frontDist > OBSTACLE_DISTANCE) {
     moveForward();
   } else {
-    if (DEBUG)
-      Serial.print("Obstacle detected stopping\t");
+    if (DEBUG) Serial.print("Obstacle detected - Stopping\t");
     stopMotors();
     delay(300);
 
-    if (rightDist > OBSTACLE_DISTANCE && (rightDist >= leftDist || currentPattern == right)) {
-      if (DEBUG)
-        Serial.print("Right direction selected\t");
-          currentPattern = right;
-      turnRight();
-      delay(4000);
-      stopMotors();
-    } else if (leftDist > OBSTACLE_DISTANCE && currentPattern == left) {
-      if (DEBUG)
-        Serial.print("Left direction selected\t");
-      turnLeft();
-      delay(4000);
-      stopMotors();
-    } else {
-      // If both sides blocked, try moving backward if back is clear
-      if (backDist > OBSTACLE_DISTANCE) {
-        if (DEBUG)
-          Serial.print("Right direction selected\t");
-        moveBackward();
-        delay(2000);
+    if (currentPattern == right) {
+      if (rightDist > OBSTACLE_DISTANCE) {
+        if (DEBUG) Serial.print("Turning Right\t");
+        turnRight();
+        delay(4000);
         stopMotors();
-        delay(300);
+        currentPattern = left;  // Toggle pattern
+      } else if (leftDist > OBSTACLE_DISTANCE) {
+        if (DEBUG) Serial.print("Turning Left (fallback)\t");
+        turnLeft();
+        delay(4000);
+        stopMotors();
+        currentPattern = left;  // Toggle anyway
       } else {
-        // No space to move backward or turn, stop
+        if (backDist > OBSTACLE_DISTANCE) {
+          if (DEBUG) Serial.print("Backing up\t");
+          moveBackward();
+          delay(2000);
+          stopMotors();
+          delay(300);
+        } else {
+          if (DEBUG) Serial.print("No space to move\t");
+          stopMotors();
+          delay(500);
+        }
+      }
+    } else {  // currentPattern == left
+      if (leftDist > OBSTACLE_DISTANCE) {
+        if (DEBUG) Serial.print("Turning Left\t");
+        turnLeft();
+        delay(4000);
         stopMotors();
-        delay(500);
+        currentPattern = right;  // Toggle pattern
+      } else if (rightDist > OBSTACLE_DISTANCE) {
+        if (DEBUG) Serial.print("Turning Right (fallback)\t");
+        turnRight();
+        delay(4000);
+        stopMotors();
+        currentPattern = right;  // Toggle anyway
+      } else {
+        if (backDist > OBSTACLE_DISTANCE) {
+          if (DEBUG) Serial.print("Backing up\t");
+          moveBackward();
+          delay(2000);
+          stopMotors();
+          delay(300);
+        } else {
+          if (DEBUG) Serial.print("No space to move\t");
+          stopMotors();
+          delay(500);
+        }
       }
     }
   }
