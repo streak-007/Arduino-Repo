@@ -25,6 +25,7 @@
 
 // ---------------- Constants ----------------
 #define OBSTACLE_DISTANCE 20  // cm
+#define MAX_OBSTACLE_DIST 200 //failsafe
 #define RC_HIGH_THRESHOLD_FRONTBACK 1600
 #define RC_LOW_THRESHOLD_FRONTBACK 1300
 #define RC_HIGH_THRESHOLD_RIGHTLEFT 1650
