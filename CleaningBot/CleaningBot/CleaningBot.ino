@@ -1,9 +1,9 @@
 #define DEBUG true
 // ---------------- Pin Definitions ----------------
-#define MOTOR_LEFT_FORWARD 4
-#define MOTOR_LEFT_BACKWARD 5
-#define MOTOR_RIGHT_FORWARD 6
-#define MOTOR_RIGHT_BACKWARD 7
+#define MOTOR_LEFT_POSITIVE 4
+#define MOTOR_LEFT_NEGATIVE 5
+#define MOTOR_RIGHT_POSITIVE 6
+#define MOTOR_RIGHT_NEGATIVE 7
 #define CUTOFF_LEFT 2
 #define CUTOFF_RIGHT 3
 
@@ -41,10 +41,10 @@ Direction currentPattern = right;
 
 void setup() {
   // Motor relay pins
-  pinMode(MOTOR_LEFT_FORWARD, OUTPUT);
-  pinMode(MOTOR_LEFT_BACKWARD, OUTPUT);
-  pinMode(MOTOR_RIGHT_FORWARD, OUTPUT);
-  pinMode(MOTOR_RIGHT_BACKWARD, OUTPUT);
+  pinMode(MOTOR_LEFT_POSITIVE, OUTPUT);
+  pinMode(MOTOR_LEFT_NEGATIVE, OUTPUT);
+  pinMode(MOTOR_RIGHT_POSITIVE, OUTPUT);
+  pinMode(MOTOR_RIGHT_NEGATIVE, OUTPUT);
   pinMode(CUTOFF_LEFT, OUTPUT);
   pinMode(CUTOFF_RIGHT, OUTPUT);
 
@@ -248,10 +248,10 @@ void handleAutoMode() {
 void stopMotors() {
   if (DEBUG)
     Serial.print("Stop\t");
-  digitalWrite(MOTOR_LEFT_FORWARD, HIGH);
-  digitalWrite(MOTOR_LEFT_BACKWARD, HIGH);
-  digitalWrite(MOTOR_RIGHT_FORWARD, HIGH);
-  digitalWrite(MOTOR_RIGHT_BACKWARD, HIGH);
+  digitalWrite(MOTOR_LEFT_POSITIVE, HIGH);
+  digitalWrite(MOTOR_LEFT_NEGATIVE, HIGH);
+  digitalWrite(MOTOR_RIGHT_POSITIVE, HIGH);
+  digitalWrite(MOTOR_RIGHT_NEGATIVE, HIGH);
 
   digitalWrite(CUTOFF_LEFT, HIGH);
   digitalWrite(CUTOFF_RIGHT, HIGH);
@@ -263,10 +263,10 @@ void moveForward() {
   digitalWrite(CUTOFF_LEFT, LOW);
   digitalWrite(CUTOFF_RIGHT, LOW);
 
-  digitalWrite(MOTOR_LEFT_FORWARD, HIGH);
-  digitalWrite(MOTOR_LEFT_BACKWARD, HIGH);
-  digitalWrite(MOTOR_RIGHT_FORWARD, HIGH);
-  digitalWrite(MOTOR_RIGHT_BACKWARD, HIGH);
+  digitalWrite(MOTOR_LEFT_POSITIVE, HIGH);
+  digitalWrite(MOTOR_LEFT_NEGATIVE, HIGH);
+  digitalWrite(MOTOR_RIGHT_POSITIVE, HIGH);
+  digitalWrite(MOTOR_RIGHT_NEGATIVE, HIGH);
 }
 
 void moveBackward() {
@@ -275,10 +275,10 @@ void moveBackward() {
   digitalWrite(CUTOFF_LEFT, LOW);
   digitalWrite(CUTOFF_RIGHT, LOW);
 
-  digitalWrite(MOTOR_LEFT_FORWARD, LOW);
-  digitalWrite(MOTOR_LEFT_BACKWARD, LOW);
-  digitalWrite(MOTOR_RIGHT_FORWARD, LOW);
-  digitalWrite(MOTOR_RIGHT_BACKWARD, LOW);
+  digitalWrite(MOTOR_LEFT_POSITIVE, LOW);
+  digitalWrite(MOTOR_LEFT_NEGATIVE, LOW);
+  digitalWrite(MOTOR_RIGHT_POSITIVE, LOW);
+  digitalWrite(MOTOR_RIGHT_NEGATIVE, LOW);
 }
 
 void turnLeft() {
@@ -287,22 +287,22 @@ void turnLeft() {
   digitalWrite(CUTOFF_LEFT, LOW);
   digitalWrite(CUTOFF_RIGHT, HIGH);
 
-  digitalWrite(MOTOR_LEFT_FORWARD, HIGH);
-  digitalWrite(MOTOR_LEFT_BACKWARD, HIGH);
-  digitalWrite(MOTOR_RIGHT_FORWARD, LOW);
-  digitalWrite(MOTOR_RIGHT_BACKWARD, HIGH);
+  digitalWrite(MOTOR_LEFT_POSITIVE, LOW);
+  digitalWrite(MOTOR_LEFT_NEGATIVE, LOW);
+  digitalWrite(MOTOR_RIGHT_POSITIVE, HIGH);
+  digitalWrite(MOTOR_RIGHT_NEGATIVE, HIGH);
 }
 
 void turnRight() {
   if (DEBUG)
     Serial.print("Right\t");
-  digitalWrite(CUTOFF_LEFT, LOW);
-  digitalWrite(CUTOFF_RIGHT, HIGH);
+  digitalWrite(CUTOFF_LEFT, HIGH);
+  digitalWrite(CUTOFF_RIGHT, LOW);
 
-  digitalWrite(MOTOR_LEFT_FORWARD, LOW);
-  digitalWrite(MOTOR_LEFT_BACKWARD, HIGH);
-  digitalWrite(MOTOR_RIGHT_FORWARD, HIGH);
-  digitalWrite(MOTOR_RIGHT_BACKWARD, HIGH);
+  digitalWrite(MOTOR_LEFT_POSITIVE, HIGH);
+  digitalWrite(MOTOR_LEFT_NEGATIVE, HIGH);
+  digitalWrite(MOTOR_RIGHT_POSITIVE, LOW);
+  digitalWrite(MOTOR_RIGHT_NEGATIVE, LOW);
 }
 
 // ---------------- Ultrasonic Distance ----------------
