@@ -24,8 +24,8 @@
 #define CH_MODE_SWITCH A0  //CH3
 
 // ---------------- Constants ----------------
-#define OBSTACLE_DISTANCE 20  // cm
-#define MAX_OBSTACLE_DIST 200 //failsafe
+#define OBSTACLE_DISTANCE 100  // cm
+#define MAX_OBSTACLE_DIST 1100 //failsafe
 #define RC_HIGH_THRESHOLD_FRONTBACK 1600
 #define RC_LOW_THRESHOLD_FRONTBACK 1300
 #define RC_HIGH_THRESHOLD_RIGHTLEFT 1650
@@ -72,12 +72,19 @@ void setup() {
 
 void loop() {
   int mode = pulseIn(CH_MODE_SWITCH, HIGH, 25000);
+  // if(mode == 0)
+  // {
+  //   delay(500);
+  //   mode = pulseIn(CH_MODE_SWITCH, HIGH, 25000);
+  // }
   if (DEBUG) {
     Serial.print("CH_MODE_SWITCH");
     Serial.print(": ");
     Serial.print(mode);
     Serial.print("\t");
   }
+
+
 
   isManual = mode > RC_THRESHOLD_MANUALAUTO;
 
@@ -103,6 +110,7 @@ void loop() {
 
 // ---------------- Manual Mode Handler ----------------
 void handleManualMode() {
+  delay(1000);
   int chFwdBack = pulseIn(CH_FWD_BACK, HIGH, 25000);
   int chLeftRight = pulseIn(CH_LEFT_RIGHT, HIGH, 25000);
   int chSweeper = pulseIn(CH_SWEEPER, HIGH, 25000);
@@ -136,13 +144,15 @@ void handleManualMode() {
   digitalWrite(SWEEPER_PIN, sweeperState ? LOW : HIGH);
 
   // Movement control
-  if (chLeftRight > RC_HIGH_THRESHOLD_RIGHTLEFT) {
+  if (chFwdBack == 0 && chLeftRight == 0){
+    stopMotors();
+  } else if (chLeftRight > RC_HIGH_THRESHOLD_RIGHTLEFT && chLeftRight > 0) {
     turnRight();
-  } else if (chLeftRight < RC_LOW_THRESHOLD_RIGHTLEFT) {
+  } else if (chLeftRight < RC_LOW_THRESHOLD_RIGHTLEFT && chLeftRight > 0) {
     turnLeft();
-  } else if (chFwdBack > RC_HIGH_THRESHOLD_FRONTBACK) {
+  } else if (chFwdBack > RC_HIGH_THRESHOLD_FRONTBACK && chFwdBack > 0) {
     moveForward();
-  } else if (chFwdBack < RC_LOW_THRESHOLD_FRONTBACK) {
+  } else if (chFwdBack < RC_LOW_THRESHOLD_FRONTBACK & chFwdBack > 0) {
     moveBackward();
   } else {
     stopMotors();
@@ -151,6 +161,7 @@ void handleManualMode() {
 
 // ---------------- Auto Mode Handler ----------------
 void handleAutoMode() {
+  delay(100);
   digitalWrite(SWEEPER_PIN, LOW);  // Sweeper ON in auto mode
 
   int frontDist = getDistance(TRIG_FRONT, ECHO_FRONT);
@@ -183,7 +194,8 @@ void handleAutoMode() {
   if (frontDist < MAX_OBSTACLE_DIST && leftDist < MAX_OBSTACLE_DIST && rightDist < MAX_OBSTACLE_DIST && backDist < MAX_OBSTACLE_DIST) {
     if (frontDist > OBSTACLE_DISTANCE) {
       moveForward();
-    } else {
+    } 
+    else {
       if (DEBUG) Serial.print("Obstacle detected - Stopping\t");
       stopMotors();
       delay(300);
@@ -243,6 +255,10 @@ void handleAutoMode() {
       }
     }
   }
+  else
+  {
+      stopMotors();
+  }
   delay(50);
 }
 
@@ -275,13 +291,17 @@ void moveForward() {
 void moveBackward() {
   if (DEBUG)
     Serial.print("Backward\t");
-  digitalWrite(CUTOFF_LEFT, LOW);
-  digitalWrite(CUTOFF_RIGHT, LOW);
+
 
   digitalWrite(MOTOR_LEFT_POSITIVE, LOW);
   digitalWrite(MOTOR_LEFT_NEGATIVE, LOW);
   digitalWrite(MOTOR_RIGHT_POSITIVE, LOW);
   digitalWrite(MOTOR_RIGHT_NEGATIVE, LOW);
+
+  delay(1000);
+
+    digitalWrite(CUTOFF_LEFT, LOW);
+  digitalWrite(CUTOFF_RIGHT, LOW);
 }
 
 void turnLeft() {
